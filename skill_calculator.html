@@ -6,7 +6,6 @@
 	</head>
 	<body>
 		<canvas id='main-canvas'>Canvas failed to load. Are you sure that your browser is from this century?</canvas>
-    <button id="save">Save</button>
     <script src="geometry.js"></script>
 		<script>
       function redraw()
@@ -44,7 +43,7 @@
         rects = JSON.parse(xhr.responseText);
       }
   
-      var draggedRect = undefined;
+      var clickedRect = undefined;
       
       redraw();
       
@@ -52,37 +51,26 @@
         var mouse = getMousePositionOnCanvas(canvas, e);
         for (var i in rects) {
           if (isPointInsideRect(rects[i], mouse.x, mouse.y)) {
-            draggedRect = rects[i];
+            clickedRect = rects[i];
             break;
           }
         }
+        
+        clickedRect.value += 1;
+        redraw();
       };
 
       canvas.onmouseup = function(e) {
-        draggedRect = undefined;
+        
       };
       
       canvas.onmousemove = function(e) {
-        if (draggedRect == undefined)
-          return;
         
-        var mouse = getMousePositionOnCanvas(canvas, e);
-        
-        draggedRect.x = mouse.x;
-        draggedRect.y = mouse.y;
-        
-        redraw();
       };
       
-      document.getElementById("save").onclick = function() {
-	      var xhr = new XMLHttpRequest()
-	      xhr.open('POST', 'skill_server.php', false);
-        	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-	      xhr.send("skills=" + JSON.stringify(rects));
-
-	      if (xhr.status != 200) {
-		alert( xhr.status + ': ' + xhr.statusText );
-	      } 
+      function throwCoin(probabilityOfTrue)
+      {
+        
       }
 		</script>
 	</body>
