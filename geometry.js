@@ -31,17 +31,17 @@ function drawArrow(ctx, fromx, fromy, tox, toy)
   ctx.fill();
 }
 
-function drawRect(ctx, rect)
+function drawRect(ctx, rect, drawRectId = undefined)
 {
   ctx.fillStyle   = "#cc0000";
   ctx.strokeStyle = "#cc0000";
-  
+
   ctx.fillRect(rect.x - rect.width / 2,
     rect.y - rect.height / 2,
     rect.width,
     rect.height
   );
-  
+
   ctx.fillStyle = "#00F";
   ctx.strokeStyle = "#F00";
   ctx.font = "8pt Arial";
@@ -51,7 +51,7 @@ function drawRect(ctx, rect)
 
   ctx.font = "14pt Arial";
   ctx.textBaseline = "middle";
-  ctx.fillText(rect.value, rect.x, rect.y);
+  ctx.fillText(drawRectId == undefined ? rect.value : drawRectId, rect.x, rect.y);
 }
 
 function lineIntersectionBy4Points(
@@ -62,7 +62,7 @@ function lineIntersectionBy4Points(
   var resultX, resultY;
   // y=kx+b:
   // y = ((y2-y1)/(x2-x1))*x + (x2*y1 - x1*y2)/(x2-x1)
-  
+
   var k1 = (line1point2y - line1point1y)/(line1point2x - line1point1x);
   var k2 = (line2point2y - line2point1y)/(line2point2x - line2point1x);
   var b1 = (line1point2x*line1point1y - line1point1x*line1point2y)/(line1point2x - line1point1x);
@@ -74,7 +74,7 @@ function lineIntersectionBy4Points(
       //console.log("Line 2 is vertical");
       return undefined;
     }
-    
+
     resultX = line1point1x;
     resultY = k2 * resultX + b2;
     return {x: resultX, y: resultY};
@@ -83,15 +83,15 @@ function lineIntersectionBy4Points(
     resultY = k1 * resultX + b1;
     return {x: resultX, y: resultY};
   }
-  
+
   if (Math.abs(k1 - k2) < epsilon) {
     return undefined; // lines are parallel
   }
-  
+
   // k1*x + b1 = k2 * x + b2
   resultX = (b2 - b1)/(k1 - k2);
   resultY = k1 * resultX + b1;
-  
+
   return {x: resultX, y: resultY};
 }
 
@@ -105,40 +105,40 @@ function segmentIntersectionBy4Points(
   var lineIntersection = lineIntersectionBy4Points(
     seg1point1x, seg1point1y, seg1point2x, seg1point2y,
     seg2point1x, seg2point1y, seg2point2x, seg2point2y);
-  
+
   if (lineIntersection == undefined)
   {
     //console.log("Lines are parallel");
     return undefined;
   }
-  
+
   //console.log("Found line intersection: " + lineIntersection.x + "; " + lineIntersection.y);
-  
+
   if (lineIntersection.x < Math.min(seg1point1x, seg1point2x))
     return undefined;
-  
+
   if (lineIntersection.x < Math.min(seg2point1x, seg2point2x))
     return undefined;
-    
+
   if (lineIntersection.x > Math.max(seg1point1x, seg1point2x))
     return undefined;
-    
+
   if (lineIntersection.x > Math.max(seg2point1x, seg2point2x))
     return undefined;
-    
-    
+
+
   if (lineIntersection.y < Math.min(seg1point1y, seg1point2y))
     return undefined;
-  
+
   if (lineIntersection.y < Math.min(seg2point1y, seg2point2y))
     return undefined;
-    
+
   if (lineIntersection.y > Math.max(seg1point1y, seg1point2y))
     return undefined;
-    
+
   if (lineIntersection.y > Math.max(seg2point1y, seg2point2y))
     return undefined;
-  
+
   //console.log("... And it's inside segments");
   return lineIntersection;
 }
@@ -146,24 +146,24 @@ function segmentIntersectionBy4Points(
 function drawArrowBetweenRects(ctx, first_rect, second_rect)
 {
   var firstPoint, secondPoint, thirdPoint, fourthPoint;
-  
+
   //console.log("Arrow line from: " + first_rect.x + "; " + first_rect.y);
   //console.log("Arrow line to  : " + second_rect.x + "; " + second_rect.y);
-  
+
   //console.log("Right rect side");
-  
+
   firstPoint = segmentIntersectionBy4Points(
     second_rect.x + second_rect.width/2, second_rect.y + second_rect.height/2,
     second_rect.x + second_rect.width/2, second_rect.y - second_rect.height/2,
     first_rect.x, first_rect.y, second_rect.x, second_rect.y);
-    
+
   if (firstPoint != undefined) {
     drawArrow(ctx, first_rect.x, first_rect.y, firstPoint.x, firstPoint.y);
     return;
   }
-    
+
   //console.log("Top rect side");
-    
+
   secondPoint = segmentIntersectionBy4Points(
     second_rect.x + second_rect.width/2, second_rect.y - second_rect.height/2,
     second_rect.x - second_rect.width/2, second_rect.y - second_rect.height/2,
@@ -175,7 +175,7 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect)
   }
 
   //console.log("Left rect side");
-  
+
   thirdPoint = segmentIntersectionBy4Points(
     second_rect.x - second_rect.width/2, second_rect.y - second_rect.height/2,
     second_rect.x - second_rect.width/2, second_rect.y + second_rect.height/2,
@@ -187,7 +187,7 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect)
   }
 
   //console.log("Bottom rect side");
-  
+
   fourthPoint = segmentIntersectionBy4Points(
     second_rect.x - second_rect.width/2, second_rect.y + second_rect.height/2,
     second_rect.x + second_rect.width/2, second_rect.y + second_rect.height/2,
@@ -197,7 +197,7 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect)
     drawArrow(ctx, first_rect.x, first_rect.y, fourthPoint.x, fourthPoint.y);
     return;
   }
-  
+
   drawArrow(ctx, first_rect.x, first_rect.y, second_rect.x, second_rect.y);
 }
 
