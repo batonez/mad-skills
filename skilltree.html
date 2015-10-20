@@ -9,6 +9,7 @@
     <button id="save">Save</button>
     <button id="delete-rect">Delete Skill</button>
     <button id="create-link">Create Link</button>
+    <button id="delete-link">Delete Link</button>
     <button id="place-rect">Create Skill</button>
     <label for="skill-name">Skill name:</label><input id="skill-name" type="text" value=""></input>
     
@@ -87,12 +88,13 @@
         CREATE_NODE: 1,
         DELETE_NODE: 2,
         CREATE_LINK: 3,
+        DELETE_LINK: 4
       };
 
       var action = Action.DRAG;
       var getNextKey  = makeCounter();
       var draggedRect = undefined;
-      var createLinkParentIndex = undefined;
+      var selectLinkParentKey = undefined;
 
       redraw();
 
@@ -121,9 +123,9 @@
           document.getElementById("skill-name").value = "";
           showMessage("");
           redraw();
-        } else if (action == Action.CREATE_LINK) {
-          if (createLinkParentIndex == undefined) {
-            createLinkParentIndex = clickedIndex;
+        } else if (action == Action.CREATE_LINK || action == Action.DELETE_LINK) {
+          if (selectLinkParentKey == undefined) {
+            selectLinkParentKey = clickedIndex;
           }
         } else if (action == Action.DRAG) {
           draggedRect = clickedRect;
@@ -154,16 +156,32 @@
           showMessage("");
           redraw();
         } else if (action == Action.CREATE_LINK) {
-          if (createLinkParentIndex != undefined && createLinkParentIndex != i) {
-            if (rects[i]["parents"].indexOf(createLinkParentIndex) == -1) {
-              rects[i]["parents"].push(createLinkParentIndex);
+          if (selectLinkParentKey != undefined && selectLinkParentKey != i) {
+            if (rects[i]["parents"].indexOf(selectLinkParentKey) == -1) {
+              rects[i]["parents"].push(selectLinkParentKey);
             }
             
             action = Action.DRAG;
-            createLinkParentIndex = undefined;
+            selectLinkParentKey = undefined;
             document.getElementById("create-link").innerHTML = "Create Link";
             showMessage("");
-            redraw("");
+            redraw();
+          }
+        } else if (action == Action.DELETE_LINK) {
+          if (selectLinkParentKey != undefined && selectLinkParentKey != i) {
+            for (var parentIndex = 0; parentIndex < rects[i]["parents"].length; parentIndex++)
+            {
+              if (rects[i]["parents"][parentIndex] == selectLinkParentKey) {
+                rects[i]["parents"].splice(parentIndex, 1);
+                break;
+              }
+            }
+            
+            action = Action.DRAG;
+            selectLinkParentKey = undefined;
+            document.getElementById("delete-link").innerHTML = "Delete Link";
+            showMessage("");
+            redraw();
           }
         }
       };
@@ -195,7 +213,7 @@
       document.getElementById("place-rect").onclick = function() {
         action = (action == Action.CREATE_NODE ? Action.DRAG : Action.CREATE_NODE);
         document.getElementById("place-rect").innerHTML = (action == Action.CREATE_NODE ? "Cancel" : "Create Skill");
-        showMessage("Select an empty spot");
+        showMessage("Select an empty spot to create a skill at");
       }
 
       document.getElementById("delete-rect").onclick = function() {
@@ -207,7 +225,13 @@
       document.getElementById("create-link").onclick = function() {
         action = (action == Action.CREATE_LINK ? Action.DRAG : Action.CREATE_LINK);
         document.getElementById("create-link").innerHTML = (action == Action.CREATE_LINK ? "Cancel" : "Create Link");
-        showMessage("Select a parent skill, then a child");
+        showMessage("Select a parent skill, then a child to create a link");
+      }
+
+      document.getElementById("delete-link").onclick = function() {
+        action = (action == Action.DELETE_LINK ? Action.DRAG : Action.DELETE_LINK);
+        document.getElementById("delete-link").innerHTML = (action == Action.DELETE_LINK ? "Cancel" : "Delete Link");
+        showMessage("Select a parent skill, then a child to delete a link");
       }
     </script>
   </body>
