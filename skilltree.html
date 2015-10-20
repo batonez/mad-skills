@@ -7,10 +7,12 @@
   <body>
     <canvas id='main-canvas'>Canvas failed to load. Are you sure that your browser is from this century?</canvas>
     <button id="save">Save</button>
-  <button id="place-rect">Create Skill</button>
-  <button id="delete-rect">Delete Skill</button>
+    <button id="delete-rect">Delete Skill</button>
+    <button id="create-link">Create Link</button>
+    <button id="place-rect">Create Skill</button>
     <label for="skill-name">Skill name:</label><input id="skill-name" type="text" value=""></input>
-  <div id="message"></div>
+    
+    <div id="message"></div>
     <script src="geometry.js"></script>
     <script>
       function redraw()
@@ -33,6 +35,38 @@
         ctx.strokeRect(0, 0, 640, 480);
       }
 
+      function makeCounter()
+      {
+        var i = Math.max.apply(Math, Object.keys(rects));
+        return function() { return ++i; }
+      }
+
+      function getMousePositionOnCanvas(canvas, mouseEvent)
+      {
+        var canvasBounds = canvas.getBoundingClientRect();
+        return {
+          x: mouseEvent.clientX - canvasBounds.left,
+          y: mouseEvent.clientY - canvasBounds.top
+        };
+      }
+
+      function getRectIndexAtCoord(x, y)
+      {
+        for (var i in rects) {
+          if (isPointInsideRect(rects[i], x, y)) {
+            return i;
+          }
+        }
+
+        return undefined;
+      }
+
+      function showMessage(text)
+      {
+        document.getElementById("message").innerHTML = text;
+      }
+////////////////////////////////////////////////////////////////////////////////
+
       var canvas = document.getElementById("main-canvas");
       var ctx    = canvas.getContext('2d');
       canvas.height = 480;
@@ -52,32 +86,20 @@
         DRAG: 0,
         CREATE_NODE: 1,
         DELETE_NODE: 2,
+        CREATE_LINK: 3,
       };
 
       var action = Action.DRAG;
       var getNextKey  = makeCounter();
       var draggedRect = undefined;
+      var createLinkParentIndex = undefined;
 
       redraw();
 
-      function makeCounter()
-      {
-        var i = Math.max.apply(Math, Object.keys(rects));
-        return function() { return ++i; }
-      }
-
-      function getMousePositionOnCanvas(canvas, mouseEvent)
-      {
-        var canvasBounds = canvas.getBoundingClientRect();
-        return {
-          x: mouseEvent.clientX - canvasBounds.left,
-          y: mouseEvent.clientY - canvasBounds.top
-        };
-      }
-
       canvas.onmousedown = function(e) {
         var mouse = getMousePositionOnCanvas(canvas, e);
-        var clickedRect = rects[getRectIndexAtCoord(mouse.x, mouse.y)];
+        var clickedIndex = getRectIndexAtCoord(mouse.x, mouse.y);
+        var clickedRect = rects[clickedIndex];
 
         if (action == Action.CREATE_NODE) {
           if (clickedRect != undefined) {
@@ -90,7 +112,8 @@
             "width": 50,
             "height": 50,
             "text": document.getElementById("skill-name").value,
-            "value": 0
+            "value": 0,
+            "parents": []
           };
 
           action = Action.DRAG;
@@ -98,38 +121,26 @@
           document.getElementById("skill-name").value = "";
           showMessage("");
           redraw();
+        } else if (action == Action.CREATE_LINK) {
+          if (createLinkParentIndex == undefined) {
+            createLinkParentIndex = clickedIndex;
+          }
         } else if (action == Action.DRAG) {
           draggedRect = clickedRect;
         }
       };
 
-      function getRectIndexAtCoord(x, y)
-      {
-        for (var i in rects) {
-          if (isPointInsideRect(rects[i], x, y)) {
-            return i;
-          }
-        }
-
-        return undefined;
-      }
-
       canvas.onmouseup = function(e) {
         draggedRect = undefined;
-
+        var mouse = getMousePositionOnCanvas(canvas, e);
+        var i = getRectIndexAtCoord(mouse.x, mouse.y);
+        
         if (action == Action.DELETE_NODE) {
-          var mouse = getMousePositionOnCanvas(canvas, e);
-          var i = getRectIndexAtCoord(mouse.x, mouse.y);
-
           if (i == undefined) {
             return;
           }
 
           for (var j in rects) {
-            if (rects[j]["parents"] == undefined) {
-              continue;
-            }
-
             for (var parentKey = 0; parentKey < rects[j]["parents"].length; parentKey++) {
               if (rects[j]["parents"][parentKey] == i) {
                 rects[j]["parents"].splice(parentKey, 1);
@@ -142,6 +153,18 @@
           document.getElementById("delete-rect").innerHTML = "Delete Skill";
           showMessage("");
           redraw();
+        } else if (action == Action.CREATE_LINK) {
+          if (createLinkParentIndex != undefined && createLinkParentIndex != i) {
+            if (rects[i]["parents"].indexOf(createLinkParentIndex) == -1) {
+              rects[i]["parents"].push(createLinkParentIndex);
+            }
+            
+            action = Action.DRAG;
+            createLinkParentIndex = undefined;
+            document.getElementById("create-link").innerHTML = "Create Link";
+            showMessage("");
+            redraw("");
+          }
         }
       };
 
@@ -181,9 +204,10 @@
         showMessage("Select a skill to delete");
       }
 
-      function showMessage(text)
-      {
-        document.getElementById("message").innerHTML = text;
+      document.getElementById("create-link").onclick = function() {
+        action = (action == Action.CREATE_LINK ? Action.DRAG : Action.CREATE_LINK);
+        document.getElementById("create-link").innerHTML = (action == Action.CREATE_LINK ? "Cancel" : "Create Link");
+        showMessage("Select a parent skill, then a child");
       }
     </script>
   </body>
