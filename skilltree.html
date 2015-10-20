@@ -7,6 +7,10 @@
 	<body>
 		<canvas id='main-canvas'>Canvas failed to load. Are you sure that your browser is from this century?</canvas>
     <button id="save">Save</button>
+	<button id="place-rect">Create Skill</button>
+	<button id="delete-rect">Delete Skill</button>
+    <label for="skill-name">Skill name:</label><input id="skill-name" type="text" value=""></input>
+	<div id="message"></div>
     <script src="geometry.js"></script>
 		<script>
       function redraw()
@@ -44,22 +48,89 @@
         rects = JSON.parse(xhr.responseText);
       }
   
-      var draggedRect = undefined;
-      
+      var Action = {
+		DRAG: 0,
+		CREATE_NODE: 1,
+		DELETE_NODE: 2,
+	  };
+	  
+      var action = Action.DRAG;
+	  var getNextKey  = makeCounter();
+	  var draggedRect = undefined;
+	  
       redraw();
+      
+	  function makeCounter()
+	  {
+		var i = Math.max.apply(Math, Object.keys(rects));
+		return function() { return ++i; }
+	  }
+
+      function getMousePositionOnCanvas(canvas, mouseEvent)
+      {
+        var canvasBounds = canvas.getBoundingClientRect();
+        return {
+          x: mouseEvent.clientX - canvasBounds.left,
+          y: mouseEvent.clientY - canvasBounds.top
+        };
+      }
       
       canvas.onmousedown = function(e) {
         var mouse = getMousePositionOnCanvas(canvas, e);
-        for (var i in rects) {
-          if (isPointInsideRect(rects[i], mouse.x, mouse.y)) {
-            draggedRect = rects[i];
-            break;
-          }
-        }
+		var clickedRect = rects[getRectIndexAtCoord(mouse.x, mouse.y)];
+		
+		if (action == Action.CREATE_NODE) {
+			if (clickedRect != undefined) {
+		    return;
+		  }
+			rects[getNextKey()] = {
+			  "x": mouse.x,
+			  "y": mouse.y,
+			  "width": 50,
+			  "height": 50,
+			  "text": document.getElementById("skill-name").value,
+			  "value": 0
+			};
+			
+			action = Action.DRAG;
+			document.getElementById("place-rect").innerHTML = "Create Skill";
+			document.getElementById("skill-name").value = "";
+			showMessage("");
+			redraw();
+	 
+		} else if (action == Action.DRAG) {
+		  draggedRect = clickedRect;
+		}
       };
 
+	  function getRectIndexAtCoord(x, y)
+	  {
+		for (var i in rects) {
+		  if (isPointInsideRect(rects[i], x, y)) {
+			return i;
+		  }
+		}
+		
+		return undefined;
+	  }
+	  
       canvas.onmouseup = function(e) {
         draggedRect = undefined;
+		
+		if (action == Action.DELETE_NODE) {
+			var mouse = getMousePositionOnCanvas(canvas, e);
+			var i = getRectIndexAtCoord(mouse.x, mouse.y);
+			
+			if (i == undefined) {
+			  return;
+			}
+			
+			delete rects[i];
+			action = Action.DRAG
+			document.getElementById("delete-rect").innerHTML = "Delete Skill";
+			showMessage("");
+			redraw();
+		}
       };
       
       canvas.onmousemove = function(e) {
@@ -84,6 +155,23 @@
 		alert( xhr.status + ': ' + xhr.statusText );
 	      } 
       }
+	  
+	   document.getElementById("place-rect").onclick = function() {
+	      action = (action == Action.CREATE_NODE ? Action.DRAG : Action.CREATE_NODE);
+		  document.getElementById("place-rect").innerHTML = (action == Action.CREATE_NODE ? "Cancel" : "Create Skill");
+		  showMessage("Select an empty spot");
+      }
+
+	   document.getElementById("delete-rect").onclick = function() {
+	      action = (action == Action.DELETE_NODE ? Action.DRAG : Action.DELETE_NODE);
+		  document.getElementById("delete-rect").innerHTML = (action == Action.DELETE_NODE ? "Cancel" : "Delete Skill");
+		  showMessage("Select a skill to delete");
+      }
+	  
+	  function showMessage(text)
+	  {
+	    document.getElementById("message").innerHTML = text;
+	  }
 		</script>
 	</body>
 </html>
