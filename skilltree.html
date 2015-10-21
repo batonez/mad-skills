@@ -37,12 +37,13 @@
       <fieldset>
         <button id="delete-rect">Delete Skill</button>
         <button id="place-rect">Create Skill:</button>
-        <input id="skill-name" type="text" value=""></input>
+        <input  id="skill-name" type="text" value=""></input>
       </fieldset>
       
       <fieldset>
         <button id="delete-link">Delete Link</button>
-        <button id="create-link">Create Link</button>
+        <button id="create-link">Create Link:</button>
+        <input  id="link-weight" type="number" step="any" min="0" max="1" value=""></input>
       </fieldset>
     
       <fieldset>
@@ -58,13 +59,11 @@
         ctx.fillStyle = "#EEEEEE";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        for (var i in rects) {
-          if (rects[i].hasOwnProperty("parents")) {
-            var parents = rects[i].parents;
-
-            for (var pKey = 0; pKey < parents.length; pKey++)
-              drawArrowBetweenRects(ctx, rects[i], rects[parents[pKey]]);
-          }
+        for (var i in rects) {          
+          var parents = rects[i].parents;
+          
+          for (var pKey in parents)
+            drawArrowBetweenRects(ctx, rects[i], rects[pKey], rects[i]["parents"][pKey]);
 
           drawRect(ctx, rects[i], i);
           prev = i;
@@ -144,8 +143,8 @@
 
       canvas.onmousedown = function(e) {
         var mouse = getMousePositionOnCanvas(canvas, e);
-        var clickedIndex = getRectIndexAtCoord(mouse.x, mouse.y);
-        var clickedRect = rects[clickedIndex];
+        var clickedRectKey = getRectIndexAtCoord(mouse.x, mouse.y);
+        var clickedRect = rects[clickedRectKey];
 
         if (action == Action.CREATE_NODE) {
           if (clickedRect != undefined) {
@@ -159,7 +158,7 @@
             "height": 50,
             "text": document.getElementById("skill-name").value,
             "value": 0,
-            "parents": []
+            "parents": {}
           };
 
           action = Action.DRAG;
@@ -169,7 +168,7 @@
           redraw();
         } else if (action == Action.CREATE_LINK || action == Action.DELETE_LINK) {
           if (selectLinkParentKey == undefined) {
-            selectLinkParentKey = clickedIndex;
+            selectLinkParentKey = clickedRectKey;
           }
         } else if (action == Action.DRAG) {
           draggedRect = clickedRect;
@@ -187,9 +186,9 @@
           }
 
           for (var j in rects) {
-            for (var parentKey = 0; parentKey < rects[j]["parents"].length; parentKey++) {
-              if (rects[j]["parents"][parentKey] == i) {
-                rects[j]["parents"].splice(parentKey, 1);
+            for (var parentKey in rects[j]["parents"]) {
+              if (parentKey == i) {
+                delete rects[j]["parents"][parentKey];
               }
             }
           }
@@ -201,22 +200,23 @@
           redraw();
         } else if (action == Action.CREATE_LINK) {
           if (selectLinkParentKey != undefined && selectLinkParentKey != i) {
-            if (rects[i]["parents"].indexOf(selectLinkParentKey) == -1) {
-              rects[i]["parents"].push(selectLinkParentKey);
+            if (!rects[i]["parents"].hasOwnProperty(selectLinkParentKey)) {
+              rects[i]["parents"][selectLinkParentKey] = document.getElementById("link-weight").value;
             }
             
             action = Action.DRAG;
             selectLinkParentKey = undefined;
             document.getElementById("create-link").innerHTML = "Create Link";
+            document.getElementById("link-weight").value = "";
             showMessage("");
             redraw();
           }
         } else if (action == Action.DELETE_LINK) {
           if (selectLinkParentKey != undefined && selectLinkParentKey != i) {
-            for (var parentIndex = 0; parentIndex < rects[i]["parents"].length; parentIndex++)
+            for (var parentKey in rects[i]["parents"])
             {
-              if (rects[i]["parents"][parentIndex] == selectLinkParentKey) {
-                rects[i]["parents"].splice(parentIndex, 1);
+              if (parentKey == selectLinkParentKey) {
+                delete rects[i]["parents"][parentKey];
                 break;
               }
             }

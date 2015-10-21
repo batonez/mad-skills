@@ -145,7 +145,27 @@ function segmentIntersectionBy4Points(
   return lineIntersection;
 }
 
-function drawArrowBetweenRects(ctx, first_rect, second_rect)
+function drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
+{
+  var arrowCenterX = Math.abs(first_rect.x - second_rect.x) / 2 + Math.min(first_rect.x, second_rect.x);
+  var arrowCenterY = Math.abs(first_rect.y - second_rect.y) / 2 + Math.min(first_rect.y, second_rect.y);
+  
+  ctx.fillStyle = "#EEEEEE";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(arrowCenterX, arrowCenterY, 20, 0, 2 * Math.PI);
+  ctx.stroke();
+  ctx.fill();
+  
+  ctx.fillStyle = "#444444";
+  ctx.strokeStyle = "#000000"
+  ctx.font = "10pt Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(weight, arrowCenterX, arrowCenterY);
+}
+
+function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0)
 {
   var firstPoint, secondPoint, thirdPoint, fourthPoint;
 
@@ -161,6 +181,7 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect)
 
   if (firstPoint != undefined) {
     drawArrow(ctx, first_rect.x, first_rect.y, firstPoint.x, firstPoint.y);
+    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
     return;
   }
 
@@ -173,6 +194,7 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect)
 
   if (secondPoint != undefined) {
     drawArrow(ctx, first_rect.x, first_rect.y, secondPoint.x, secondPoint.y);
+    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
     return;
   }
 
@@ -185,6 +207,7 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect)
 
   if (thirdPoint != undefined) {
     drawArrow(ctx, first_rect.x, first_rect.y, thirdPoint.x, thirdPoint.y);
+    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
     return;
   }
 
@@ -197,10 +220,12 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect)
 
   if (fourthPoint != undefined) {
     drawArrow(ctx, first_rect.x, first_rect.y, fourthPoint.x, fourthPoint.y);
+    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
     return;
   }
 
   drawArrow(ctx, first_rect.x, first_rect.y, second_rect.x, second_rect.y);
+  drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
 }
 
 function isPointInsideRect(rect, x, y)
