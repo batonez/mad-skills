@@ -3,22 +3,60 @@
   <head>
     <title>Skill Tree</title>
     <meta charset='utf-8' />
+    <style>
+      html {
+        color: #66391A;
+      }
+      
+      #main-canvas {
+        float: left;
+      }
+      
+      #controls {
+        padding-left: 7px;
+        overflow: hidden;
+      }
+      
+      #save {
+        margin-top: 8px;
+      }
+      
+      #message {
+        margin-top: 8px;
+        background-color: #FFDDEE;
+      }
+      
+      fieldset {
+        border: none;
+      }
+    </style>
   </head>
   <body>
     <canvas id='main-canvas'>Canvas failed to load. Are you sure that your browser is from this century?</canvas>
-    <button id="save">Save</button>
-    <button id="delete-rect">Delete Skill</button>
-    <button id="create-link">Create Link</button>
-    <button id="delete-link">Delete Link</button>
-    <button id="place-rect">Create Skill</button>
-    <label for="skill-name">Skill name:</label><input id="skill-name" type="text" value=""></input>
+    <div id="controls">
+      <fieldset>
+        <button id="delete-rect">Delete Skill</button>
+        <button id="place-rect">Create Skill:</button>
+        <input id="skill-name" type="text" value=""></input>
+      </fieldset>
+      
+      <fieldset>
+        <button id="delete-link">Delete Link</button>
+        <button id="create-link">Create Link</button>
+      </fieldset>
     
-    <div id="message"></div>
+      <fieldset>
+        <button id="save">Save</button>
+      </fieldset>
+      <div id="message"></div>
+    </div>
+    
     <script src="geometry.js"></script>
     <script>
       function redraw()
       {
-        ctx.clearRect(0, 0, 640, 480);
+        ctx.fillStyle = "#EEEEEE";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         for (var i in rects) {
           if (rects[i].hasOwnProperty("parents")) {
@@ -31,9 +69,9 @@
           drawRect(ctx, rects[i], i);
           prev = i;
         }
-
-        ctx.strokeStyle = "#000000";
-        ctx.strokeRect(0, 0, 640, 480);
+/*
+        ctx.strokeStyle = "#CCCCCC";
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);*/
       }
 
       function makeCounter()
@@ -69,10 +107,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 
       var canvas = document.getElementById("main-canvas");
+      var w = window;
+      var d = document;
+      var e = d.documentElement;
+      var g = d.getElementsByTagName('body')[0];
+      //canvas.width = w.innerWidth || e.clientWidth || g.clientWidth;
+      //canvas.height = w.innerHeight|| e.clientHeight|| g.clientHeight;
+      canvas.width = g.clientWidth - 500;
+      canvas.height = e.clientHeight - 20;
       var ctx    = canvas.getContext('2d');
-      canvas.height = 480;
-      canvas.width  = 640;
-
+      
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'skills.json', false);
       xhr.send();
@@ -213,25 +257,25 @@
       document.getElementById("place-rect").onclick = function() {
         action = (action == Action.CREATE_NODE ? Action.DRAG : Action.CREATE_NODE);
         document.getElementById("place-rect").innerHTML = (action == Action.CREATE_NODE ? "Cancel" : "Create Skill");
-        showMessage("Select an empty spot to create a skill at");
+        showMessage(action == Action.DRAG ? "" : "Enter the name of a skill and select an empty spot to place it at");
       }
 
       document.getElementById("delete-rect").onclick = function() {
         action = (action == Action.DELETE_NODE ? Action.DRAG : Action.DELETE_NODE);
         document.getElementById("delete-rect").innerHTML = (action == Action.DELETE_NODE ? "Cancel" : "Delete Skill");
-        showMessage("Select a skill to delete");
+        showMessage(action == Action.DRAG ? "" : "Select a skill to delete");
       }
 
       document.getElementById("create-link").onclick = function() {
         action = (action == Action.CREATE_LINK ? Action.DRAG : Action.CREATE_LINK);
         document.getElementById("create-link").innerHTML = (action == Action.CREATE_LINK ? "Cancel" : "Create Link");
-        showMessage("Select a parent skill, then a child to create a link");
+        showMessage(action == Action.DRAG ? "" : "Select a parent skill, then a child to create a link");
       }
 
       document.getElementById("delete-link").onclick = function() {
         action = (action == Action.DELETE_LINK ? Action.DRAG : Action.DELETE_LINK);
         document.getElementById("delete-link").innerHTML = (action == Action.DELETE_LINK ? "Cancel" : "Delete Link");
-        showMessage("Select a parent skill, then a child to delete a link");
+        showMessage(action == Action.DRAG ? "" : "Select a parent skill, then a child to delete a link");
       }
     </script>
   </body>

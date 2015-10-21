@@ -2,8 +2,8 @@ function drawArrow(ctx, fromx, fromy, tox, toy)
 {
   //variables to be used when creating the arrow
   var headlen = 10;
-  ctx.fillStyle   = "#cc0000";
-  ctx.strokeStyle = "#cc0000";
+  ctx.fillStyle   = "#66391A";
+  ctx.strokeStyle = "#66391A";
   ctx.lineWidth = 2;
 
   var angle = Math.atan2(toy-fromy,tox-fromx);
@@ -33,8 +33,8 @@ function drawArrow(ctx, fromx, fromy, tox, toy)
 
 function drawRect(ctx, rect, drawRectId = undefined)
 {
-  ctx.fillStyle   = "#cc0000";
-  ctx.strokeStyle = "#cc0000";
+  ctx.fillStyle   = "#66391A";
+  ctx.strokeStyle = "#66391A";
 
   ctx.fillRect(rect.x - rect.width / 2,
     rect.y - rect.height / 2,
@@ -49,6 +49,8 @@ function drawRect(ctx, rect, drawRectId = undefined)
   ctx.textBaseline = "bottom";
   ctx.fillText(rect.text, rect.x, rect.y-rect.height/2);
 
+  ctx.fillStyle = "#FFFFFF";
+  ctx.strokeStyle = "#000000"
   ctx.font = "14pt Arial";
   ctx.textBaseline = "middle";
   ctx.fillText(drawRectId == undefined ? rect.value : drawRectId, rect.x, rect.y);
