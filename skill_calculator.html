@@ -56,21 +56,23 @@
           }
         }
         
-        clickedRect.value += 1;
+        if (throwCoin())
+          clickedRect.value += 1;
+
         redraw();
       };
 
       canvas.onmouseup = function(e) {
-        
+        clickedRect = undefined;
       };
       
       canvas.onmousemove = function(e) {
         
       };
       
-      function throwCoin(probabilityOfTrue)
+      function throwCoin(probabilityOfTrue = 0.5)
       {
-        
+        return (Math.random() < probabilityOfTrue);
       }
 		</script>
 	</body>
