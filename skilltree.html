@@ -37,13 +37,13 @@
       <fieldset>
         <button id="delete-rect">Delete Skill</button>
         <button id="place-rect">Create Skill:</button>
-        <input  id="skill-name" type="text" value="" title="The name of the skill"></input>
+        <input  id="skill-name" type="text" value=""></input>
       </fieldset>
       
       <fieldset>
         <button id="delete-link">Delete Link</button>
         <button id="create-link">Create Link:</button>
-        <input  id="link-weight" type="number" step="any" min="0" max="1" value="" title="The weight of the link"></input>
+        <input  id="link-weight" type="number" step="any" min="0" max="1" value=""></input>
       </fieldset>
     
       <fieldset>
@@ -137,6 +137,8 @@
       var action = Action.DRAG;
       var getNextKey  = makeCounter();
       var draggedRect = undefined;
+      var dragCorrectionX = undefined;
+      var dragCorrectionY = undefined;
       var selectLinkParentKey = undefined;
 
       redraw();
@@ -172,11 +174,15 @@
           }
         } else if (action == Action.DRAG) {
           draggedRect = clickedRect;
+          dragCorrectionX = mouse.x - draggedRect.x;
+          dragCorrectionY = mouse.y - draggedRect.y;
         }
       };
 
       canvas.onmouseup = function(e) {
         draggedRect = undefined;
+        dragCorrectionX = undefined;
+        dragCorrectionY = undefined;
         var mouse = getMousePositionOnCanvas(canvas, e);
         var i = getRectIndexAtCoord(mouse.x, mouse.y);
         
@@ -237,8 +243,8 @@
 
         var mouse = getMousePositionOnCanvas(canvas, e);
 
-        draggedRect.x = mouse.x;
-        draggedRect.y = mouse.y;
+        draggedRect.x = mouse.x - dragCorrectionX;
+        draggedRect.y = mouse.y - dragCorrectionY;
 
         redraw();
       };
@@ -269,7 +275,7 @@
       document.getElementById("create-link").onclick = function() {
         action = (action == Action.CREATE_LINK ? Action.DRAG : Action.CREATE_LINK);
         document.getElementById("create-link").innerHTML = (action == Action.CREATE_LINK ? "Cancel" : "Create Link");
-        showMessage(action == Action.DRAG ? "" : "Select a parent skill, then a child to create a link");
+        showMessage(action == Action.DRAG ? "" : "Enter link weight, select a parent skill, then select a child to create a link");
       }
 
       document.getElementById("delete-link").onclick = function() {
