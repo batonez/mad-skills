@@ -31,7 +31,7 @@
       }
     </style>
   </head>
-  <body>
+  <body oncontextmenu="return false;">
     <canvas id='main-canvas'>Canvas failed to load. Are you sure that your browser is from this century?</canvas>
     <div id="controls">
       <fieldset>
@@ -63,9 +63,9 @@
           var parents = rects[i].parents;
           
           for (var pKey in parents)
-            drawArrowBetweenRects(ctx, rects[i], rects[pKey], rects[i]["parents"][pKey]);
+           // drawArrowBetweenRects(ctx, rects[i], rects[pKey], rects[i]["parents"][pKey], translation);
 
-          drawRect(ctx, rects[i], i);
+          drawRect(ctx, rects[i], i, translation);
           prev = i;
         }
 /*
@@ -91,7 +91,7 @@
       function getRectIndexAtCoord(x, y)
       {
         for (var i in rects) {
-          if (isPointInsideRect(rects[i], x, y)) {
+          if (isPointInsideRect(rects[i], x, y, translation)) {
             return i;
           }
         }
@@ -140,11 +140,22 @@
       var dragCorrectionX = undefined;
       var dragCorrectionY = undefined;
       var selectLinkParentKey = undefined;
+      var translating = false;
+      var translation = {x: 0, y: 0};
+      var prevMouseX = undefined;
+      var prevMouseY = undefined;
 
       redraw();
 
       canvas.onmousedown = function(e) {
         var mouse = getMousePositionOnCanvas(canvas, e);
+        if (e.button == 2) {
+          translating = true;
+          prevMouseX = mouse.x;
+          prevMouseY = mouse.y;
+          return;
+        }
+        
         var clickedRectKey = getRectIndexAtCoord(mouse.x, mouse.y);
         var clickedRect = rects[clickedRectKey];
 
@@ -180,6 +191,9 @@
       };
 
       canvas.onmouseup = function(e) {
+        translating = false;
+        prevMouseX = undefined;
+        prevMouseY = undefined;
         draggedRect = undefined;
         dragCorrectionX = undefined;
         dragCorrectionY = undefined;
@@ -237,16 +251,24 @@
       };
 
       canvas.onmousemove = function(e) {
-        if (draggedRect == undefined) {
-          return;
+        if (draggedRect != undefined) {
+          var mouse = getMousePositionOnCanvas(canvas, e);
+
+          draggedRect.x = mouse.x - dragCorrectionX;
+          draggedRect.y = mouse.y - dragCorrectionY;
+
+          redraw();
+        } else if (translating) {
+          var mouse = getMousePositionOnCanvas(canvas, e);
+
+          translation.x += mouse.x - prevMouseX;
+          translation.y += mouse.y - prevMouseY;
+          
+          prevMouseX = mouse.x;
+          prevMouseY = mouse.y;
+
+          redraw();          
         }
-
-        var mouse = getMousePositionOnCanvas(canvas, e);
-
-        draggedRect.x = mouse.x - dragCorrectionX;
-        draggedRect.y = mouse.y - dragCorrectionY;
-
-        redraw();
       };
 
       document.getElementById("save").onclick = function() {

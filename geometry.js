@@ -31,13 +31,13 @@ function drawArrow(ctx, fromx, fromy, tox, toy)
   ctx.fill();
 }
 
-function drawRect(ctx, rect, drawRectId = undefined)
+function drawRect(ctx, rect, drawRectId = undefined, translation = {x: 0, y: 0})
 {
   ctx.fillStyle   = "#66391A";
   ctx.strokeStyle = "#66391A";
 
-  ctx.fillRect(rect.x - rect.width / 2,
-    rect.y - rect.height / 2,
+  ctx.fillRect(rect.x - rect.width / 2 + translation.x,
+    rect.y - rect.height / 2 + translation.y,
     rect.width,
     rect.height
   );
@@ -47,13 +47,13 @@ function drawRect(ctx, rect, drawRectId = undefined)
   ctx.font = "8pt Arial";
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
-  ctx.fillText(rect.text, rect.x, rect.y-rect.height/2);
+  ctx.fillText(rect.text, rect.x + translation.x, rect.y - rect.height/2 + translation.y);
 
   ctx.fillStyle = "#FFFFFF";
   ctx.strokeStyle = "#000000"
   ctx.font = "14pt Arial";
   ctx.textBaseline = "middle";
-  ctx.fillText(drawRectId == undefined ? rect.value : drawRectId, rect.x, rect.y);
+  ctx.fillText(drawRectId == undefined ? rect.value : drawRectId, rect.x + translation.x, rect.y + translation.y);
 }
 
 function lineIntersectionBy4Points(
@@ -165,7 +165,7 @@ function drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
   ctx.fillText(weight, arrowCenterX, arrowCenterY);
 }
 
-function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0)
+function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, translation = {x: 0, y: 0})
 {
   var firstPoint, secondPoint, thirdPoint, fourthPoint;
 
@@ -228,12 +228,12 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0)
   drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
 }
 
-function isPointInsideRect(rect, x, y)
+function isPointInsideRect(rect, x, y, translation = {x: 0, y: 0})
 {
-  return (x <= rect.x + rect.width  / 2) &&
-    (x >= rect.x - rect.width  / 2) &&
-    (y <= rect.y + rect.height / 2) &&
-    (y >= rect.y - rect.height / 2);
+  return (x <= rect.x + translation.x + rect.width  / 2) &&
+    (x >= rect.x + translation.x - rect.width  / 2) &&
+    (y <= rect.y + translation.y + rect.height / 2) &&
+    (y >= rect.y + translation.y - rect.height / 2);
 }
 
 function getMousePositionOnCanvas(canvas, mouseEvent)
