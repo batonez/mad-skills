@@ -1,37 +1,100 @@
 <!doctype html>
 <html>
-	<head>
-		<title>Skill Tree</title>
-		<meta charset='utf-8' />
-	</head>
-	<body>
-		<canvas id='main-canvas'>Canvas failed to load. Are you sure that your browser is from this century?</canvas>
+  <head>
+    <title>Skill Tree</title>
+    <meta charset='utf-8' />
+    <style>
+      html {
+        color: #66391A;
+      }
+      
+      #main-canvas {
+        float: left;
+      }
+      
+      #controls {
+        padding-left: 7px;
+        overflow: hidden;
+      }
+      
+      #save {
+        margin-top: 8px;
+      }
+      
+      #message {
+        margin-top: 8px;
+        background-color: #FFDDEE;
+      }
+      
+      fieldset {
+        border: none;
+      }
+    </style>
+  </head>
+  <body oncontextmenu="return false;">
+    <canvas id='main-canvas'>Canvas failed to load. Are you sure that your browser is from this century?</canvas>
+    <div id="controls">
+      <fieldset>
+        <input type="checkbox" id="show-weights"/><label for="show-weights">Show weights</label>
+      </fieldset>
+    
+      <div id="message"></div>
+    </div>
+    
     <script src="geometry.js"></script>
-		<script>
+    <script>
       function redraw()
       {
-        ctx.clearRect(0, 0, 640, 480);
-        
-        for (var i in rects) {
-          if (rects[i].hasOwnProperty("parents")) {
-            var parents = rects[i].parents;
-            
-            for (var pKey = 0; pKey < parents.length; pKey++)
-              drawArrowBetweenRects(ctx, rects[i], rects[parents[pKey]]);
-          }
-            
-          drawRect(ctx, rects[i]);
+        ctx.fillStyle = "#EEEEEE";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (var i in rects) {          
+          var parents = rects[i].parents;
+          
+          for (var pKey in parents)
+            drawArrowBetweenRects(ctx, rects[i], rects[pKey], rects[i]["parents"][pKey], document.getElementById("show-weights").checked, translation);
+
+          drawRect(ctx, rects[i], undefined, translation);
           prev = i;
         }
-        
-        ctx.strokeStyle = "#000000";
-        ctx.strokeRect(0, 0, 640, 480);
       }
-    
-			var canvas = document.getElementById("main-canvas"),
-			    ctx    = canvas.getContext('2d');
-			canvas.height = 480;
-			canvas.width  = 640;
+
+      function getMousePositionOnCanvas(canvas, mouseEvent)
+      {
+        var canvasBounds = canvas.getBoundingClientRect();
+        return {
+          x: mouseEvent.clientX - canvasBounds.left,
+          y: mouseEvent.clientY - canvasBounds.top
+        };
+      }
+
+      function getRectIndexAtCoord(x, y)
+      {
+        for (var i in rects) {
+          if (isPointInsideRect(rects[i], x, y, translation)) {
+            return i;
+          }
+        }
+
+        return undefined;
+      }
+
+      function showMessage(text)
+      {
+        document.getElementById("message").innerHTML = text;
+      }
+////////////////////////////////////////////////////////////////////////////////
+
+      var canvas = document.getElementById("main-canvas");
+      var w = window;
+      var d = document;
+      var e = d.documentElement;
+      var g = d.getElementsByTagName('body')[0];
+      //canvas.width = w.innerWidth || e.clientWidth || g.clientWidth;
+      //canvas.height = w.innerHeight|| e.clientHeight|| g.clientHeight;
+      canvas.width = g.clientWidth - 500;
+      canvas.height = e.clientHeight - 20;
+      var ctx    = canvas.getContext('2d');
       
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'skills.json', false);
@@ -42,15 +105,26 @@
       } else {
         rects = JSON.parse(xhr.responseText);
       }
-  
-      var clickedRect = undefined;
-      
+
+      var translating = false;
+      var translation = {x: 0, y: 0};
+      var prevMouseX = undefined;
+      var prevMouseY = undefined;
+
       redraw();
       
       canvas.onmousedown = function(e) {
         var mouse = getMousePositionOnCanvas(canvas, e);
+        
+        if (e.button == 2) {
+          translating = true;
+          prevMouseX = mouse.x;
+          prevMouseY = mouse.y;
+          return;
+        }
+        
         for (var i in rects) {
-          if (isPointInsideRect(rects[i], mouse.x, mouse.y)) {
+          if (isPointInsideRect(rects[i], mouse.x, mouse.y, translation)) {
             clickedRect = rects[i];
             break;
           }
@@ -64,17 +138,31 @@
 
       canvas.onmouseup = function(e) {
         clickedRect = undefined;
+        translating = false;
+        prevMouseX = undefined;
+        prevMouseY = undefined;
       };
       
       canvas.onmousemove = function(e) {
-        
+        if (translating) {
+          var mouse = getMousePositionOnCanvas(canvas, e);
+
+          translation.x += mouse.x - prevMouseX;
+          translation.y += mouse.y - prevMouseY;
+          
+          prevMouseX = mouse.x;
+          prevMouseY = mouse.y;
+
+          redraw();          
+        }
       };
       
       function throwCoin(probabilityOfTrue = 0.5)
       {
         return (Math.random() < probabilityOfTrue);
       }
-		</script>
-	</body>
+      
+      document.getElementById("show-weights").onclick = function() { redraw(); }
+    </script>
+  </body>
 </html>
-
