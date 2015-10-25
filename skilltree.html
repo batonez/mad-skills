@@ -63,14 +63,11 @@
           var parents = rects[i].parents;
           
           for (var pKey in parents)
-           // drawArrowBetweenRects(ctx, rects[i], rects[pKey], rects[i]["parents"][pKey], translation);
+            drawArrowBetweenRects(ctx, rects[i], rects[pKey], rects[i]["parents"][pKey], translation);
 
           drawRect(ctx, rects[i], i, translation);
           prev = i;
         }
-/*
-        ctx.strokeStyle = "#CCCCCC";
-        ctx.strokeRect(0, 0, canvas.width, canvas.height);*/
       }
 
       function makeCounter()

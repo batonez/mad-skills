@@ -145,7 +145,7 @@ function segmentIntersectionBy4Points(
   return lineIntersection;
 }
 
-function drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
+function drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation = {x: 0, y: 0})
 {
   var arrowCenterX = Math.abs(first_rect.x - second_rect.x) / 2 + Math.min(first_rect.x, second_rect.x);
   var arrowCenterY = Math.abs(first_rect.y - second_rect.y) / 2 + Math.min(first_rect.y, second_rect.y);
@@ -153,7 +153,7 @@ function drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
   ctx.fillStyle = "#EEEEEE";
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.arc(arrowCenterX, arrowCenterY, 20, 0, 2 * Math.PI);
+  ctx.arc(arrowCenterX + translation.x, arrowCenterY + translation.y, 20, 0, 2 * Math.PI);
   ctx.stroke();
   ctx.fill();
   
@@ -162,7 +162,7 @@ function drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
   ctx.font = "10pt Arial";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(weight, arrowCenterX, arrowCenterY);
+  ctx.fillText(weight, arrowCenterX + translation.x, arrowCenterY + translation.y);
 }
 
 function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, translation = {x: 0, y: 0})
@@ -180,8 +180,8 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, transla
     first_rect.x, first_rect.y, second_rect.x, second_rect.y);
 
   if (firstPoint != undefined) {
-    drawArrow(ctx, first_rect.x, first_rect.y, firstPoint.x, firstPoint.y);
-    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
+    drawArrow(ctx, first_rect.x + translation.x, first_rect.y + translation.y, firstPoint.x + translation.x, firstPoint.y + translation.y);
+    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation)
     return;
   }
 
@@ -193,8 +193,8 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, transla
     first_rect.x, first_rect.y, second_rect.x, second_rect.y);
 
   if (secondPoint != undefined) {
-    drawArrow(ctx, first_rect.x, first_rect.y, secondPoint.x, secondPoint.y);
-    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
+    drawArrow(ctx, first_rect.x + translation.x, first_rect.y + translation.y, secondPoint.x + translation.x, secondPoint.y + translation.y);
+    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation)
     return;
   }
 
@@ -206,8 +206,8 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, transla
     first_rect.x, first_rect.y, second_rect.x, second_rect.y);
 
   if (thirdPoint != undefined) {
-    drawArrow(ctx, first_rect.x, first_rect.y, thirdPoint.x, thirdPoint.y);
-    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
+    drawArrow(ctx, first_rect.x + translation.x, first_rect.y + translation.y, thirdPoint.x + translation.x, thirdPoint.y + translation.y);
+    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation)
     return;
   }
 
@@ -219,13 +219,13 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, transla
     first_rect.x, first_rect.y, second_rect.x, second_rect.y);
 
   if (fourthPoint != undefined) {
-    drawArrow(ctx, first_rect.x, first_rect.y, fourthPoint.x, fourthPoint.y);
-    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
+    drawArrow(ctx, first_rect.x + translation.x, first_rect.y + translation.y, fourthPoint.x + translation.x, fourthPoint.y + translation.y);
+    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation)
     return;
   }
 
-  drawArrow(ctx, first_rect.x, first_rect.y, second_rect.x, second_rect.y);
-  drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight)
+  drawArrow(ctx, first_rect.x + translation.x, first_rect.y + translation.y, second_rect.x + translation.x, second_rect.y + translation.y);
+  drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation)
 }
 
 function isPointInsideRect(rect, x, y, translation = {x: 0, y: 0})
