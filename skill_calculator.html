@@ -83,6 +83,15 @@
       {
         document.getElementById("message").innerHTML = text;
       }
+      
+      function increaseSkillRecursively(rect, value)
+      {
+        rect.value += value;
+        
+        for (var i in rect.parents) {
+          increaseSkillRecursively(rects[i], value * 0.5);
+        }
+      }
 ////////////////////////////////////////////////////////////////////////////////
 
       var canvas = document.getElementById("main-canvas");
@@ -130,9 +139,10 @@
           }
         }
         
-        if (throwCoin())
-          clickedRect.value += 1;
-
+        if (throwCoin()) {
+          increaseSkillRecursively(clickedRect, 1);
+        }
+        
         redraw();
       };
 
@@ -159,7 +169,8 @@
       
       function throwCoin(probabilityOfTrue = 0.5)
       {
-        return (Math.random() < probabilityOfTrue);
+        // return (Math.random() < probabilityOfTrue);
+        return true;
       }
       
       document.getElementById("show-weights").onclick = function() { redraw(); }
