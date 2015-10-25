@@ -165,7 +165,7 @@ function drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, tran
   ctx.fillText(weight, arrowCenterX + translation.x, arrowCenterY + translation.y);
 }
 
-function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, translation = {x: 0, y: 0})
+function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, draw_weights, translation = {x: 0, y: 0})
 {
   var firstPoint, secondPoint, thirdPoint, fourthPoint;
 
@@ -181,7 +181,11 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, transla
 
   if (firstPoint != undefined) {
     drawArrow(ctx, first_rect.x + translation.x, first_rect.y + translation.y, firstPoint.x + translation.x, firstPoint.y + translation.y);
-    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation)
+    
+    if (draw_weights) {
+      drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation);
+    }
+    
     return;
   }
 
@@ -194,7 +198,11 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, transla
 
   if (secondPoint != undefined) {
     drawArrow(ctx, first_rect.x + translation.x, first_rect.y + translation.y, secondPoint.x + translation.x, secondPoint.y + translation.y);
-    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation)
+    
+    if (draw_weights) {
+      drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation);
+    }
+    
     return;
   }
 
@@ -207,7 +215,11 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, transla
 
   if (thirdPoint != undefined) {
     drawArrow(ctx, first_rect.x + translation.x, first_rect.y + translation.y, thirdPoint.x + translation.x, thirdPoint.y + translation.y);
-    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation)
+    
+    if (draw_weights) {
+      drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation);
+    }
+    
     return;
   }
 
@@ -220,12 +232,19 @@ function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, transla
 
   if (fourthPoint != undefined) {
     drawArrow(ctx, first_rect.x + translation.x, first_rect.y + translation.y, fourthPoint.x + translation.x, fourthPoint.y + translation.y);
-    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation)
+    
+    if (draw_weights) {
+      drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation);
+    }
+    
     return;
   }
 
   drawArrow(ctx, first_rect.x + translation.x, first_rect.y + translation.y, second_rect.x + translation.x, second_rect.y + translation.y);
-  drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation)
+  
+  if (draw_weights) {
+    drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, translation);
+  }
 }
 
 function isPointInsideRect(rect, x, y, translation = {x: 0, y: 0})
