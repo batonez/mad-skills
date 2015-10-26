@@ -42,18 +42,21 @@ function drawRect(ctx, rect, drawRectId = undefined, translation = {x: 0, y: 0})
     rect.height
   );
 
-  ctx.fillStyle = "#00F";
-  ctx.strokeStyle = "#F00";
-  ctx.font = "8pt Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "bottom";
-  ctx.fillText(rect.text, rect.x + translation.x, rect.y - rect.height/2 + translation.y);
-
   ctx.fillStyle = "#FFFFFF";
   ctx.strokeStyle = "#000000"
   ctx.font = "14pt Arial";
   ctx.textBaseline = "middle";
   ctx.fillText(drawRectId == undefined ? rect.value : drawRectId, rect.x + translation.x, rect.y + translation.y);
+}
+
+function drawRectName(ctx, rect, translation = {x: 0, y: 0})
+{
+  ctx.fillStyle = "#FF0000";
+  ctx.strokeStyle = "#F00";
+  ctx.font = "10pt serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.fillText(rect.text, rect.x + translation.x, rect.y - rect.height/2 + translation.y);
 }
 
 function lineIntersectionBy4Points(

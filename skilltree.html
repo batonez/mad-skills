@@ -63,7 +63,7 @@
         ctx.fillStyle = "#EEEEEE";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        for (var i in rects) {          
+        for (var i in rects) {       
           var parents = rects[i].parents;
           
           for (var pKey in parents)
@@ -71,6 +71,10 @@
 
           drawRect(ctx, rects[i], i, translation);
           prev = i;
+        }
+        
+        for (var i in rects) {
+          drawRectName(ctx, rects[i], translation);
         }
       }
 
