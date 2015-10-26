@@ -29,6 +29,9 @@
       fieldset {
         border: none;
       }
+      
+      #weight-sliders {
+      }
     </style>
   </head>
   <body oncontextmenu="return false;">
@@ -49,10 +52,14 @@
       <fieldset>
         <input type="checkbox" id="show-weights"/><label for="show-weights">Show weights</label>
       </fieldset>
+      
+      <fieldset id="weight-sliders">
+      </fieldset>
     
       <fieldset>
-        <button id="save">Save</button>
+        <button id="save">Save graph</button>
       </fieldset>
+      
       <div id="message"></div>
     </div>
     
@@ -108,6 +115,42 @@
       {
         document.getElementById("message").innerHTML = text;
       }
+      
+      function selectParentsRecursively(rect, deselect=false)
+      {
+        for (var i in rect["parents"]) {
+          rects[i]["selected"] = deselect ? 0 : 2;
+          selectParentsRecursively(rects[i], deselect);
+        }
+      }
+      
+      function selectRect(rect)
+      {
+        selectedRect = rect;
+        selectedRect["selected"] = 1;
+        selectParentsRecursively(selectedRect);
+/*
+        var slider = document.createElement("input");
+        slider.setAttribute("type", "range");
+        slider.setAttribute("min", "0.05");
+        slider.setAttribute("max", "0.95");
+        slider.setAttribute("step", "0.05");
+        slider.setAttribute("id", "weight");
+        document.getElementById("weight-sliders").appendChild(slider);
+*/      
+        redraw();
+      }
+      
+      function deselectRect(rect, do_redraw=false)
+      {
+        selectedRect["selected"] = 0;
+        selectParentsRecursively(selectedRect, true);
+        selectedRect = undefined;
+
+        if (do_redraw) {
+          redraw();
+        }
+      }
 ////////////////////////////////////////////////////////////////////////////////
 
       var canvas = document.getElementById("main-canvas");
@@ -149,7 +192,9 @@
       var translation = {x: 0, y: 0};
       var prevMouseX = undefined;
       var prevMouseY = undefined;
-
+      var willSelectNodeOnMouseUp = false;
+      var selectedRect = undefined;
+      
       redraw();
 
       canvas.onmousedown = function(e) {
@@ -189,9 +234,12 @@
             selectLinkParentKey = clickedRectKey;
           }
         } else if (action == Action.DRAG) {
-          draggedRect = clickedRect;
-          dragCorrectionX = mouse.x - draggedRect.x;
-          dragCorrectionY = mouse.y - draggedRect.y;
+          if (clickedRect != undefined) {
+            willSelectNodeOnMouseUp = true;        
+            draggedRect = clickedRect;
+            dragCorrectionX = mouse.x - draggedRect.x;
+            dragCorrectionY = mouse.y - draggedRect.y;
+          }
         }
       };
 
@@ -252,10 +300,19 @@
             showMessage("");
             redraw();
           }
+        } else if (willSelectNodeOnMouseUp) {
+          if (selectedRect != undefined) {
+            deselectRect(selectedRect);
+          }
+          
+          selectRect(rects[i]);
+          willSelectNodeOnMouseUp = false;
         }
       };
 
       canvas.onmousemove = function(e) {
+        willSelectNodeOnMouseUp = false;
+        
         if (draggedRect != undefined) {
           var mouse = getMousePositionOnCanvas(canvas, e);
 

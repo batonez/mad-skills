@@ -2,8 +2,6 @@ function drawArrow(ctx, fromx, fromy, tox, toy)
 {
   //variables to be used when creating the arrow
   var headlen = 10;
-  ctx.fillStyle   = "#66391A";
-  ctx.strokeStyle = "#66391A";
   ctx.lineWidth = 2;
 
   var angle = Math.atan2(toy-fromy,tox-fromx);
@@ -33,7 +31,14 @@ function drawArrow(ctx, fromx, fromy, tox, toy)
 
 function drawRect(ctx, rect, drawRectId = undefined, translation = {x: 0, y: 0})
 {
-  ctx.fillStyle   = "#66391A";
+  if (rect["selected"] == 1) {
+    ctx.fillStyle   = "#22FF55";
+  } else if (rect["selected"] == 2) {
+    ctx.fillStyle   = "#229955";
+  } else {
+    ctx.fillStyle   = "#66391A";
+  }
+  
   ctx.strokeStyle = "#66391A";
 
   ctx.fillRect(rect.x - rect.width / 2 + translation.x,
@@ -46,6 +51,7 @@ function drawRect(ctx, rect, drawRectId = undefined, translation = {x: 0, y: 0})
   ctx.strokeStyle = "#000000"
   ctx.font = "14pt Arial";
   ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
   ctx.fillText(drawRectId == undefined ? rect.value : drawRectId, rect.x + translation.x, rect.y + translation.y);
 }
 
@@ -170,6 +176,14 @@ function drawWeightCircleBetweenRects(ctx, first_rect, second_rect, weight, tran
 
 function drawArrowBetweenRects(ctx, first_rect, second_rect, weight = 0, draw_weights, translation = {x: 0, y: 0})
 {
+  if (first_rect["selected"] != undefined && first_rect["selected"] != 0) {
+    ctx.fillStyle   = "#229955";
+    ctx.strokeStyle   = "#229955";
+  } else {
+    ctx.fillStyle   = "#66391A";
+    ctx.strokeStyle = "#66391A";
+  }
+  
   var firstPoint, secondPoint, thirdPoint, fourthPoint;
 
   //console.log("Arrow line from: " + first_rect.x + "; " + first_rect.y);

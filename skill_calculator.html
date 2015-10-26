@@ -57,6 +57,10 @@
           drawRect(ctx, rects[i], undefined, translation);
           prev = i;
         }
+        
+        for (var i in rects) {
+          drawRectName(ctx, rects[i], translation);
+        }
       }
 
       function getMousePositionOnCanvas(canvas, mouseEvent)
