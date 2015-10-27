@@ -129,27 +129,30 @@
         }
       }
       
-      function selectRect(rect)
+      function selectRect(rectIndex)
       {
-        selectedRect = rect;
+        selectedRect = rects[rectIndex];
+        rectIndex = rectIndex;
         selectedRect["selected"] = 1;
         selectParentsRecursively(selectedRect);
   
         document.getElementById("selected-node-name").value = selectedRect.text;
         
-        for (var i in  selectedRect["parents"]) {
-          var sliderRow = document.createElement("div");
-          sliderRow.innerHTML = rects[i].text + ": ";
-          var slider = document.createElement("input");
-          slider.setAttribute("type", "range");
-          slider.setAttribute("min", "0.05");
-          slider.setAttribute("max", "0.95");
-          slider.setAttribute("step", "0.05");
-          slider.setAttribute("id", "weight_of_" + i);
-          slider.value = selectedRect["parents"][i] == "" ? 0 : selectedRect["parents"][i];
+        for (var i in rects) {
+          if (rects[i]["parents"].hasOwnProperty(rectIndex)) {
+            var sliderRow = document.createElement("div");
+            sliderRow.innerHTML = rects[i].text + ": ";
+            var slider = document.createElement("input");
+            slider.setAttribute("type", "range");
+            slider.setAttribute("min", "0.05");
+            slider.setAttribute("max", "0.95");
+            slider.setAttribute("step", "0.05");
+            slider.setAttribute("id", "weight_of_" + i);
+            slider.value = selectedRect["parents"][i] == "" ? 0 : selectedRect["parents"][i];
 
-          sliderRow.appendChild(slider);
-          document.getElementById("weight-sliders").appendChild(sliderRow);
+            sliderRow.appendChild(slider);
+            document.getElementById("weight-sliders").appendChild(sliderRow);
+          }
         }
 
         redraw();
@@ -321,7 +324,7 @@
             deselectRect(selectedRect);
           }
           
-          selectRect(rects[i]);
+          selectRect(i);
           willSelectNodeOnMouseUp = false;
         }
       };
@@ -389,9 +392,7 @@
       document.getElementById("save-node").onclick = function() {
         selectedRect.text = document.getElementById("selected-node-name").value;
         
-        for (var i in selectedRect["parents"]) {
-          selectedRect["parents"][i] = document.getElementById("weight_of_" + i).value;
-        }
+        // implement sliders value save (get the number form their id)
         
         redraw();
       }
@@ -399,9 +400,7 @@
       document.getElementById("reset-node").onclick = function() {
         document.getElementById("selected-node-name").value = selectedRect.text;
         
-        for (var i in selectedRect["parents"]) {
-          document.getElementById("weight_of_" + i).value = selectedRect["parents"][i];
-        }
+        // implement sliders value reset (get the number form their id)
       }
     </script>
   </body>
