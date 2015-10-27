@@ -53,9 +53,14 @@
         <input type="checkbox" id="show-weights"/><label for="show-weights">Show weights</label>
       </fieldset>
       
-      <fieldset id="weight-sliders">
-      </fieldset>
-    
+      <div id="selected-node">
+        <input type="text" id="selected-node-name" value=""></input>
+        <fieldset id="weight-sliders">
+        </fieldset>
+        <button id="save-node">Apply</button>
+        <button id="reset-node">Revert</button>
+      </div>
+      
       <fieldset>
         <button id="save">Save graph</button>
       </fieldset>
@@ -129,15 +134,24 @@
         selectedRect = rect;
         selectedRect["selected"] = 1;
         selectParentsRecursively(selectedRect);
-/*
-        var slider = document.createElement("input");
-        slider.setAttribute("type", "range");
-        slider.setAttribute("min", "0.05");
-        slider.setAttribute("max", "0.95");
-        slider.setAttribute("step", "0.05");
-        slider.setAttribute("id", "weight");
-        document.getElementById("weight-sliders").appendChild(slider);
-*/      
+  
+        document.getElementById("selected-node-name").value = selectedRect.text;
+        
+        for (var i in  selectedRect["parents"]) {
+          var sliderRow = document.createElement("div");
+          sliderRow.innerHTML = rects[i].text + ": ";
+          var slider = document.createElement("input");
+          slider.setAttribute("type", "range");
+          slider.setAttribute("min", "0.05");
+          slider.setAttribute("max", "0.95");
+          slider.setAttribute("step", "0.05");
+          slider.setAttribute("id", "weight_of_" + i);
+          slider.value = selectedRect["parents"][i] == "" ? 0 : selectedRect["parents"][i];
+
+          sliderRow.appendChild(slider);
+          document.getElementById("weight-sliders").appendChild(sliderRow);
+        }
+
         redraw();
       }
       
@@ -146,6 +160,8 @@
         selectedRect["selected"] = 0;
         selectParentsRecursively(selectedRect, true);
         selectedRect = undefined;
+        document.getElementById("selected-node-name").innerHTML = "";
+        document.getElementById("weight-sliders").innerHTML = "";
 
         if (do_redraw) {
           redraw();
@@ -369,6 +385,24 @@
       }
       
       document.getElementById("show-weights").onclick = function() { redraw(); }
+
+      document.getElementById("save-node").onclick = function() {
+        selectedRect.text = document.getElementById("selected-node-name").value;
+        
+        for (var i in selectedRect["parents"]) {
+          selectedRect["parents"][i] = document.getElementById("weight_of_" + i).value;
+        }
+        
+        redraw();
+      }
+      
+      document.getElementById("reset-node").onclick = function() {
+        document.getElementById("selected-node-name").value = selectedRect.text;
+        
+        for (var i in selectedRect["parents"]) {
+          document.getElementById("weight_of_" + i).value = selectedRect["parents"][i];
+        }
+      }
     </script>
   </body>
 </html>
