@@ -153,35 +153,53 @@
             slider.setAttribute("oldvalue", slider.value);
 
             slider.onchange = function() {
+              console.log("=================================")
+              console.log("THIS SLIDER NEW VALUE IS: " + this.value);
+              
               var sliders = document.getElementsByClassName("weight-slider");
               var totalValue = 0;
-
+              var sliderValues = {};
+              var corrections = {};
+              
               for (var j = 0; j < sliders.length; ++j) {
                 totalValue += parseFloat(sliders[j].value);
+                
+                if (sliders[j] != this) {
+                  sliderValues[sliders[j].getAttribute("id")] = parseFloat(sliders[j].value);
+                }
               }
-
+               
+              var sortedSliderKeys = Object.keys(sliderValues).sort(function(a, b) {return (totalValue > 1 ? 1 : -1) * (sliderValues[a] - sliderValues[b])});
+              
+              for (var k = 0; k < sortedSliderKeys.length; ++k) {
+                console.log("Slider " + sortedSliderKeys[k] + ": " + sliderValues[sortedSliderKeys[k]]);
+              }
+              
+              var totalCorrection = (1 - totalValue);
+              var correction = totalCorrection / (sliders.length - 1);
               console.log("TOTAL VALUE: " + totalValue);
-              // Нужна индивидуальная коррекция для каждого слайдера, ибо некоторые слайдеры не могут изменить своё значение на требуемую величину (например потому что уже удавлены в максимум или минимум)
-              var correctionForEachSlider = (1 - totalValue) / (sliders.length - 1);
-              console.log("CORRECTION: " + correctionForEachSlider);
+              console.log("TOTAL CORRECTION: " + totalCorrection);
+              console.log("CORRECTION PER SLIDER: " + correction);
 
+              for (var k = 0; k < sortedSliderKeys.length; ++k) {
+                var newValue = sliderValues[sortedSliderKeys[k]] + correction;
+                if (newValue < 0.001) {
+                  correction += (newValue - 0.001) / (sortedSliderKeys.length - (k + 1));
+                  newValue = 0.001;
+                  console.log("CORRECTION PER SLIDER IS NOW: " + correction);
+                } else if (newValue > 0.999) {
+                  correction += (newValue - 0.999) / (sortedSliderKeys.length - (k + 1));
+                  newValue = 0.999;
+                  console.log("CORRECTION PER SLIDER IS NOW: " + correction);
+                }
+                
+                sliderValues[sortedSliderKeys[k]] = newValue;
+              }
+              
               for (var j = 0; j < sliders.length; ++j) {
                 if (sliders[j] != this) {
-                  var currentVal = parseFloat(sliders[j].value);
-                  currentVal += correctionForEachSlider;
-
-                  if (currentVal < 0.001) {
-                    console.log("AUTOCORRECT IS BELOW MIN!"); // вот оно собссно
-                    currentVal = 0.001;
-                  } else if (currentVal > 0.999) {
-                    console.log("AUTOCORRECT IS ABOVE MAX!"); // вот оно собссно
-                    currentVal = 0.999;
-                  }
-
-                  console.log("SETTING VAL TO " + currentVal);
-
-                  sliders[j].value = currentVal;
-                  sliders[j].setAttribute("oldvalue", currentVal);
+                  sliders[j].value = sliderValues[sliders[j].getAttribute("id")];
+                  sliders[j].setAttribute("oldvalue", sliders[j].value);
                 }
               }
 
