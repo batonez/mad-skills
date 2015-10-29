@@ -7,29 +7,29 @@
       html {
         color: #66391A;
       }
-      
+
       #main-canvas {
         float: left;
       }
-      
+
       #controls {
         padding-left: 7px;
         overflow: hidden;
       }
-      
+
       #save {
         margin-top: 8px;
       }
-      
+
       #message {
         margin-top: 8px;
         background-color: #FFDDEE;
       }
-      
+
       fieldset {
         border: none;
       }
-      
+
       #weight-sliders {
       }
     </style>
@@ -42,17 +42,17 @@
         <button id="place-rect">Create Skill:</button>
         <input  id="skill-name" type="text" value=""></input>
       </fieldset>
-      
+
       <fieldset>
         <button id="delete-link">Delete Link</button>
         <button id="create-link">Create Link:</button>
         <input  id="link-weight" type="number" step="any" min="0" max="1" value=""></input>
       </fieldset>
-    
+
       <fieldset>
         <input type="checkbox" id="show-weights"/><label for="show-weights">Show weights</label>
       </fieldset>
-      
+
       <div id="selected-node">
         <input type="text" id="selected-node-name" value=""></input>
         <fieldset id="weight-sliders">
@@ -60,14 +60,14 @@
         <button id="save-node">Apply</button>
         <button id="reset-node">Revert</button>
       </div>
-      
+
       <fieldset>
         <button id="save">Save graph</button>
       </fieldset>
-      
+
       <div id="message"></div>
     </div>
-    
+
     <script src="geometry.js"></script>
     <script>
       function redraw()
@@ -75,16 +75,16 @@
         ctx.fillStyle = "#EEEEEE";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        for (var i in rects) {       
+        for (var i in rects) {
           var parents = rects[i].parents;
-          
+
           for (var pKey in parents)
             drawArrowBetweenRects(ctx, rects[i], rects[pKey], rects[i]["parents"][pKey], document.getElementById("show-weights").checked, translation);
 
           drawRect(ctx, rects[i], i, translation);
           prev = i;
         }
-        
+
         for (var i in rects) {
           drawRectName(ctx, rects[i], translation);
         }
@@ -120,7 +120,7 @@
       {
         document.getElementById("message").innerHTML = text;
       }
-      
+
       function selectParentsRecursively(rect, deselect=false)
       {
         for (var i in rect["parents"]) {
@@ -128,27 +128,65 @@
           selectParentsRecursively(rects[i], deselect);
         }
       }
-      
+
       function selectRect(rectIndex)
       {
-        selectedRect = rects[rectIndex];
-        rectIndex = rectIndex;
-        selectedRect["selected"] = 1;
-        selectParentsRecursively(selectedRect);
-  
-        document.getElementById("selected-node-name").value = selectedRect.text;
-        
+        selectedRectIndex = rectIndex;
+        rects[selectedRectIndex]["selected"] = 1;
+        selectParentsRecursively(rects[selectedRectIndex]);
+
+        document.getElementById("selected-node-name").value = rects[selectedRectIndex].text;
+
         for (var i in rects) {
-          if (rects[i]["parents"].hasOwnProperty(rectIndex)) {
+          if (rects[i]["parents"].hasOwnProperty(selectedRectIndex)) {
             var sliderRow = document.createElement("div");
             sliderRow.innerHTML = rects[i].text + ": ";
             var slider = document.createElement("input");
             slider.setAttribute("type", "range");
-            slider.setAttribute("min", "0.05");
-            slider.setAttribute("max", "0.95");
-            slider.setAttribute("step", "0.05");
+            slider.setAttribute("min", "0.001");
+            slider.setAttribute("max", "0.999");
+            slider.setAttribute("step", "0.001");
             slider.setAttribute("id", "weight_of_" + i);
-            slider.value = selectedRect["parents"][i] == "" ? 0 : selectedRect["parents"][i];
+            slider.setAttribute("class", "weight-slider");
+            slider.value = rects[i]["parents"][selectedRectIndex] == "" ? 0
+              : rects[i]["parents"][selectedRectIndex];
+            slider.setAttribute("oldvalue", slider.value);
+
+            slider.onchange = function() {
+              var sliders = document.getElementsByClassName("weight-slider");
+              var totalValue = 0;
+
+              for (var j = 0; j < sliders.length; ++j) {
+                totalValue += parseFloat(sliders[j].value);
+              }
+
+              console.log("TOTAL VALUE: " + totalValue);
+              // Нужна индивидуальная коррекция для каждого слайдера, ибо некоторые слайдеры не могут изменить своё значение на требуемую величину (например потому что уже удавлены в максимум или минимум)
+              var correctionForEachSlider = (1 - totalValue) / (sliders.length - 1);
+              console.log("CORRECTION: " + correctionForEachSlider);
+
+              for (var j = 0; j < sliders.length; ++j) {
+                if (sliders[j] != this) {
+                  var currentVal = parseFloat(sliders[j].value);
+                  currentVal += correctionForEachSlider;
+
+                  if (currentVal < 0.001) {
+                    console.log("AUTOCORRECT IS BELOW MIN!"); // вот оно собссно
+                    currentVal = 0.001;
+                  } else if (currentVal > 0.999) {
+                    console.log("AUTOCORRECT IS ABOVE MAX!"); // вот оно собссно
+                    currentVal = 0.999;
+                  }
+
+                  console.log("SETTING VAL TO " + currentVal);
+
+                  sliders[j].value = currentVal;
+                  sliders[j].setAttribute("oldvalue", currentVal);
+                }
+              }
+
+              this.setAttribute("oldvalue", this.value);
+            }
 
             sliderRow.appendChild(slider);
             document.getElementById("weight-sliders").appendChild(sliderRow);
@@ -157,12 +195,12 @@
 
         redraw();
       }
-      
-      function deselectRect(rect, do_redraw=false)
+
+      function deselectRect(do_redraw=false)
       {
-        selectedRect["selected"] = 0;
-        selectParentsRecursively(selectedRect, true);
-        selectedRect = undefined;
+        rects[selectedRectIndex]["selected"] = 0;
+        selectParentsRecursively(rects[selectedRectIndex], true);
+        selectedRectIndex = undefined;
         document.getElementById("selected-node-name").innerHTML = "";
         document.getElementById("weight-sliders").innerHTML = "";
 
@@ -182,7 +220,7 @@
       canvas.width = g.clientWidth - 500;
       canvas.height = e.clientHeight - 20;
       var ctx    = canvas.getContext('2d');
-      
+
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'skills.json', false);
       xhr.send();
@@ -212,8 +250,8 @@
       var prevMouseX = undefined;
       var prevMouseY = undefined;
       var willSelectNodeOnMouseUp = false;
-      var selectedRect = undefined;
-      
+      var selectedRectIndex = undefined;
+
       redraw();
 
       canvas.onmousedown = function(e) {
@@ -224,7 +262,7 @@
           prevMouseY = mouse.y;
           return;
         }
-        
+
         var clickedRectKey = getRectIndexAtCoord(mouse.x, mouse.y);
         var clickedRect = rects[clickedRectKey];
 
@@ -254,7 +292,7 @@
           }
         } else if (action == Action.DRAG) {
           if (clickedRect != undefined) {
-            willSelectNodeOnMouseUp = true;        
+            willSelectNodeOnMouseUp = true;
             draggedRect = clickedRect;
             dragCorrectionX = mouse.x - draggedRect.x;
             dragCorrectionY = mouse.y - draggedRect.y;
@@ -271,7 +309,7 @@
         dragCorrectionY = undefined;
         var mouse = getMousePositionOnCanvas(canvas, e);
         var i = getRectIndexAtCoord(mouse.x, mouse.y);
-        
+
         if (action == Action.DELETE_NODE) {
           if (i == undefined) {
             return;
@@ -295,7 +333,7 @@
             if (!rects[i]["parents"].hasOwnProperty(selectLinkParentKey)) {
               rects[i]["parents"][selectLinkParentKey] = document.getElementById("link-weight").value;
             }
-            
+
             action = Action.DRAG;
             selectLinkParentKey = undefined;
             document.getElementById("create-link").innerHTML = "Create Link";
@@ -312,7 +350,7 @@
                 break;
               }
             }
-            
+
             action = Action.DRAG;
             selectLinkParentKey = undefined;
             document.getElementById("delete-link").innerHTML = "Delete Link";
@@ -320,10 +358,10 @@
             redraw();
           }
         } else if (willSelectNodeOnMouseUp) {
-          if (selectedRect != undefined) {
-            deselectRect(selectedRect);
+          if (selectedRectIndex != undefined) {
+            deselectRect();
           }
-          
+
           selectRect(i);
           willSelectNodeOnMouseUp = false;
         }
@@ -331,7 +369,7 @@
 
       canvas.onmousemove = function(e) {
         willSelectNodeOnMouseUp = false;
-        
+
         if (draggedRect != undefined) {
           var mouse = getMousePositionOnCanvas(canvas, e);
 
@@ -344,11 +382,11 @@
 
           translation.x += mouse.x - prevMouseX;
           translation.y += mouse.y - prevMouseY;
-          
+
           prevMouseX = mouse.x;
           prevMouseY = mouse.y;
 
-          redraw();          
+          redraw();
         }
       };
 
@@ -386,21 +424,31 @@
         document.getElementById("delete-link").innerHTML = (action == Action.DELETE_LINK ? "Cancel" : "Delete Link");
         showMessage(action == Action.DRAG ? "" : "Select a parent skill, then a child to delete a link");
       }
-      
+
       document.getElementById("show-weights").onclick = function() { redraw(); }
 
       document.getElementById("save-node").onclick = function() {
-        selectedRect.text = document.getElementById("selected-node-name").value;
-        
-        // implement sliders value save (get the number form their id)
-        
+        rects[selectedRectIndex].text = document.getElementById("selected-node-name").value;
+
+        var sliders = document.getElementsByClassName("weight-slider");
+
+        for (var i = 0; i < sliders.length; ++i) {
+          var childId = sliders[i].getAttribute("id").replace("weight_of_", "");
+          rects[childId]["parents"][selectedRectIndex] = sliders[i].value;
+        }
+
         redraw();
       }
-      
+
       document.getElementById("reset-node").onclick = function() {
-        document.getElementById("selected-node-name").value = selectedRect.text;
-        
-        // implement sliders value reset (get the number form their id)
+        document.getElementById("selected-node-name").value = rects[selectedRectIndex].text;
+
+        var sliders = document.getElementsByClassName("weight-slider");
+
+        for (var i = 0; i < sliders.length; ++i) {
+          var childId = sliders[i].getAttribute("id").replace("weight_of_", "");
+          sliders[i].value = rects[childId]["parents"][selectedRectIndex];
+        }
       }
     </script>
   </body>
