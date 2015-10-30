@@ -414,6 +414,10 @@
       };
 
       document.getElementById("save").onclick = function() {
+        if (selectedRectIndex != undefined) {
+          deselectRect(true);
+        }
+
         var xhr = new XMLHttpRequest()
         xhr.open('POST', 'skill_server.php', false);
           xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
