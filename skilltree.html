@@ -301,7 +301,8 @@
             "height": 50,
             "text": document.getElementById("skill-name").value,
             "value": 0,
-            "parents": {}
+            "parents": {},
+            "has_children":0
           };
 
           action = Action.DRAG;
@@ -355,6 +356,7 @@
           if (selectLinkParentKey != undefined && selectLinkParentKey != i) {
             if (!rects[i]["parents"].hasOwnProperty(selectLinkParentKey)) {
               rects[i]["parents"][selectLinkParentKey] = document.getElementById("link-weight").value;
+              rects[selectLinkParentKey]["has_children"] = 1;
             }
 
             action = Action.DRAG;
