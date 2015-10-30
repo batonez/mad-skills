@@ -129,6 +129,56 @@
         }
       }
 
+      function autoCorrectSliderWeights(changedSlider)
+      {
+        //  console.log("=================================")
+        //  console.log("THIS SLIDER NEW VALUE IS: " + changedSlider.value);
+        
+        var sliders = document.getElementsByClassName("weight-slider");
+        var totalValue = 0;
+        var sliderValues = {};
+        var corrections = {};
+        
+        for (var j = 0; j < sliders.length; ++j) {
+          totalValue += parseFloat(sliders[j].value);
+          
+          if (sliders[j] != changedSlider) {
+            sliderValues[sliders[j].getAttribute("id")] = parseFloat(sliders[j].value);
+          }
+        }
+         
+        var sortedSliderKeys = Object.keys(sliderValues).sort(function(a, b) {return (totalValue > 1 ? 1 : -1) * (sliderValues[a] - sliderValues[b])});
+        var totalCorrection = (1 - totalValue);
+        var correction = totalCorrection / (sliders.length - 1);
+        //  console.log("TOTAL VALUE: " + totalValue);
+        //  console.log("TOTAL CORRECTION: " + totalCorrection);
+        //  console.log("CORRECTION PER SLIDER: " + correction);
+
+        for (var k = 0; k < sortedSliderKeys.length; ++k) {
+          var newValue = sliderValues[sortedSliderKeys[k]] + correction;
+          if (newValue < 0.001) {
+            correction += (newValue - 0.001) / (sortedSliderKeys.length - (k + 1));
+            newValue = 0.001;
+            //  console.log("CORRECTION PER SLIDER IS NOW: " + correction);
+          } else if (newValue > 0.999) {
+            correction += (newValue - 0.999) / (sortedSliderKeys.length - (k + 1));
+            newValue = 0.999;
+            //  console.log("CORRECTION PER SLIDER IS NOW: " + correction);
+          }
+          
+          sliderValues[sortedSliderKeys[k]] = newValue;
+        }
+        
+        for (var j = 0; j < sliders.length; ++j) {
+          if (sliders[j] != changedSlider) {
+            sliders[j].value = sliderValues[sliders[j].getAttribute("id")];
+            sliders[j].setAttribute("oldvalue", sliders[j].value);
+          }
+        }
+
+        changedSlider.setAttribute("oldvalue", changedSlider.value);
+      }
+      
       function selectRect(rectIndex)
       {
         selectedRectIndex = rectIndex;
@@ -136,79 +186,34 @@
         selectParentsRecursively(rects[selectedRectIndex]);
 
         document.getElementById("selected-node-name").value = rects[selectedRectIndex].text;
-
+        var childrenKeys = [];
+        
         for (var i in rects) {
           if (rects[i]["parents"].hasOwnProperty(selectedRectIndex)) {
-            var sliderRow = document.createElement("div");
-            sliderRow.innerHTML = rects[i].text + ": ";
-            var slider = document.createElement("input");
-            slider.setAttribute("type", "range");
-            slider.setAttribute("min", "0.001");
-            slider.setAttribute("max", "0.999");
-            slider.setAttribute("step", "0.001");
-            slider.setAttribute("id", "weight_of_" + i);
-            slider.setAttribute("class", "weight-slider");
-            slider.value = rects[i]["parents"][selectedRectIndex] == "" ? 0
-              : rects[i]["parents"][selectedRectIndex];
-            slider.setAttribute("oldvalue", slider.value);
-
-            slider.onchange = function() {
-              console.log("=================================")
-              console.log("THIS SLIDER NEW VALUE IS: " + this.value);
-              
-              var sliders = document.getElementsByClassName("weight-slider");
-              var totalValue = 0;
-              var sliderValues = {};
-              var corrections = {};
-              
-              for (var j = 0; j < sliders.length; ++j) {
-                totalValue += parseFloat(sliders[j].value);
-                
-                if (sliders[j] != this) {
-                  sliderValues[sliders[j].getAttribute("id")] = parseFloat(sliders[j].value);
-                }
-              }
-               
-              var sortedSliderKeys = Object.keys(sliderValues).sort(function(a, b) {return (totalValue > 1 ? 1 : -1) * (sliderValues[a] - sliderValues[b])});
-              
-              for (var k = 0; k < sortedSliderKeys.length; ++k) {
-                console.log("Slider " + sortedSliderKeys[k] + ": " + sliderValues[sortedSliderKeys[k]]);
-              }
-              
-              var totalCorrection = (1 - totalValue);
-              var correction = totalCorrection / (sliders.length - 1);
-              console.log("TOTAL VALUE: " + totalValue);
-              console.log("TOTAL CORRECTION: " + totalCorrection);
-              console.log("CORRECTION PER SLIDER: " + correction);
-
-              for (var k = 0; k < sortedSliderKeys.length; ++k) {
-                var newValue = sliderValues[sortedSliderKeys[k]] + correction;
-                if (newValue < 0.001) {
-                  correction += (newValue - 0.001) / (sortedSliderKeys.length - (k + 1));
-                  newValue = 0.001;
-                  console.log("CORRECTION PER SLIDER IS NOW: " + correction);
-                } else if (newValue > 0.999) {
-                  correction += (newValue - 0.999) / (sortedSliderKeys.length - (k + 1));
-                  newValue = 0.999;
-                  console.log("CORRECTION PER SLIDER IS NOW: " + correction);
-                }
-                
-                sliderValues[sortedSliderKeys[k]] = newValue;
-              }
-              
-              for (var j = 0; j < sliders.length; ++j) {
-                if (sliders[j] != this) {
-                  sliders[j].value = sliderValues[sliders[j].getAttribute("id")];
-                  sliders[j].setAttribute("oldvalue", sliders[j].value);
-                }
-              }
-
-              this.setAttribute("oldvalue", this.value);
-            }
-
-            sliderRow.appendChild(slider);
-            document.getElementById("weight-sliders").appendChild(sliderRow);
+            childrenKeys.push(i);
           }
+        }
+        
+        var sliderMaxVal = 1 - (0.001 * childrenKeys.length);
+        
+        for (var i = 0; i < childrenKeys.length; ++i) {
+          var sliderRow = document.createElement("div");
+          sliderRow.innerHTML = rects[childrenKeys[i]].text + ": ";
+          var slider = document.createElement("input");
+          slider.setAttribute("type", "range");
+          slider.setAttribute("min", "0.001");
+          slider.setAttribute("max", sliderMaxVal);
+          slider.setAttribute("step", "0.001");
+          slider.setAttribute("id", "weight_of_" + childrenKeys[i]);
+          slider.setAttribute("class", "weight-slider");
+          slider.value = rects[childrenKeys[i]]["parents"][selectedRectIndex] == "" ? 0
+            : rects[childrenKeys[i]]["parents"][selectedRectIndex];
+          slider.setAttribute("oldvalue", slider.value);
+
+          slider.onchange = function() { autoCorrectSliderWeights(this); }
+
+          sliderRow.appendChild(slider);
+          document.getElementById("weight-sliders").appendChild(sliderRow);
         }
 
         redraw();
@@ -452,6 +457,7 @@
 
         for (var i = 0; i < sliders.length; ++i) {
           var childId = sliders[i].getAttribute("id").replace("weight_of_", "");
+          console.log("CHILDID: " + sliders[i].getAttribute("id"));
           rects[childId]["parents"][selectedRectIndex] = sliders[i].value;
         }
 
