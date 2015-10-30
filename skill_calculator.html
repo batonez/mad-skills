@@ -90,10 +90,10 @@
       
       function increaseSkillRecursively(rect, value)
       {
-        rect.value += value;
+        rect.value = (parseFloat(rect.value) + value).toFixed(3);
         
         for (var i in rect.parents) {
-          increaseSkillRecursively(rects[i], value * 0.5);
+          increaseSkillRecursively(rects[i], value * rect["parents"][i]);
         }
       }
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,7 +143,7 @@
           }
         }
         
-        if (throwCoin()) {
+        if (clickedRect["has_children"] == 0 && throwCoin()) {
           increaseSkillRecursively(clickedRect, 1);
         }
         
